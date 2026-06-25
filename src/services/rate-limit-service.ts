@@ -21,7 +21,7 @@ export class RateLimitService  implements OnModuleDestroy{
     }
 
     onModuleDestroy() {
-        Logger.log('Cleaning up bucket limiter')
+        Logger.log('Cleaning up rate limiter')
         this.limiter.cleanUp()
     }
     
