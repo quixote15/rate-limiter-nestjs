@@ -19,15 +19,13 @@ I configured a test to hit the limited API endpoint with 10 Virtual Users, as yo
 
  */
 
-import { Injectable, Logger, NotFoundException, OnModuleDestroy, Scope } from "@nestjs/common"
+import { Logger } from "@nestjs/common"
 import { setInterval,clearInterval } from "node:timers"
 import { IncomingReq } from "./dtos"
 import { TooManyRequestsException } from "./exceptions"
+import { LimiterAlgorithm } from "./limiter-algorithm"
 
-
-
-
-export default class TokenBucket {
+export default class TokenBucket implements LimiterAlgorithm{
 
     #tokens: string[]  
     private intervalId:  NodeJS.Timeout | null = null
@@ -42,7 +40,7 @@ export default class TokenBucket {
         return this.#tokens.pop() !== undefined
     }
 
-    startRefill() {
+    initialize() {
         this.intervalId = setInterval(() => {
                 //Logger.log('startRefill started..')
                 if(this.capacity > this.#tokens.length) {
@@ -64,30 +62,4 @@ export default class TokenBucket {
             this.intervalId = null
         }
     }
-}
-
-@Injectable({scope: Scope.DEFAULT})
-export class BucketLimiterService  implements OnModuleDestroy{
-
-    private readonly bucket:TokenBucket
-    constructor() {
-        this.bucket = new TokenBucket();
-        this.bucket.startRefill();
-    }
-
-    acceptRequest(req: IncomingReq): boolean {
-        try {
-            const isAcceptable = this.bucket.acceptRequest(req)
-            Logger.log('Accepting request from ip ' + req.ip + ' accept=' + isAcceptable)
-            return isAcceptable
-        } catch (error) {
-            return false
-        }
-    }
-
-    onModuleDestroy() {
-        Logger.log('Cleaning up bucket limiter')
-        this.bucket.cleanUp()
-    }
-    
 }

@@ -1,5 +1,6 @@
 import { IncomingReq } from "./dtos";
 import { TooManyRequestsException } from "./exceptions";
+import { LimiterAlgorithm } from "./limiter-algorithm";
 
 
 /**
@@ -19,12 +20,20 @@ const getCurrentFlooredDateMinute = () => {
     return new Date(Math.floor( (Date.now() / ONE_MINUTE_IN_MILIS)  ) * ONE_MINUTE_IN_MILIS)
 }
 
-export default class FixedWindow {
+export default class FixedWindow implements LimiterAlgorithm{
 
     private currentTw: Date
     private counter: number
     constructor(private readonly capacity = 60, private readonly period = 60) {
         this.currentTw = getCurrentFlooredDateMinute()
+        this.counter = 0
+    }
+
+    initialize(): void {
+       this.counter = 0
+    }
+
+    cleanUp(): void {
         this.counter = 0
     }
 

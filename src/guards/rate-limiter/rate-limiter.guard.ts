@@ -1,10 +1,11 @@
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, Logger, Scope } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { BucketLimiterService } from 'src/limiters/token-bucket';
 import {Request} from 'express'
+import { RateLimitService } from 'src/services/rate-limit-service';
+
 @Injectable({scope: Scope.DEFAULT})
 export class RateLimiterGuard implements CanActivate {
-  constructor(private readonly limiter: BucketLimiterService) {}
+  constructor(private readonly limiter: RateLimitService) {}
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
